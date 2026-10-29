@@ -286,6 +286,8 @@ set(BOUT_SOURCES
     ./src/invert/parderiv/invert_parderiv.cxx
     ./src/invert/pardiv/impls/cyclic/pardiv_cyclic.cxx
     ./src/invert/pardiv/impls/cyclic/pardiv_cyclic.hxx
+    ./src/invert/pardiv/impls/petsc/pardiv_petsc.cxx
+    ./src/invert/pardiv/impls/petsc/pardiv_petsc.hxx
     ./src/invert/pardiv/invert_pardiv.cxx
     ./src/mesh/boundary_factory.cxx
     ./src/mesh/boundary_region.cxx

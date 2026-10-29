@@ -39,6 +39,7 @@
 
 // Pardivergence implementations
 constexpr auto PARDIVCYCLIC = "cyclic";
+constexpr auto PARDIVPETSC = "petsc";
 
 class InvertParDiv;
 
