@@ -16,7 +16,7 @@
  */
 
 #include <bout/fv_ops.hxx>
-#include <bout/invert_parderiv.hxx>
+#include <bout/invert_pardiv.hxx>
 #include <bout/physicsmodel.hxx>
 
 class DiffusionNL : public PhysicsModel {
@@ -32,6 +32,7 @@ protected:
 
     // Specify the preconditioner function
     setPrecon(&DiffusionNL::precon);
+    opt["pardiv"].setConditionallyUsed();
 
     // Add the field "f" to the time integration solver
     SOLVE_FOR(f);
@@ -99,10 +100,10 @@ protected:
   int precon(BoutReal, BoutReal gamma, BoutReal) {
     // Preconditioner
 
-    static std::unique_ptr<InvertPar> inv{nullptr};
+    static std::unique_ptr<InvertParDiv> inv{nullptr};
     if (!inv) {
       // Initialise parallel inversion class
-      inv = InvertPar::create();
+      inv = InvertParDiv::create();
       inv->setCoefA(1.0);
     }
 
