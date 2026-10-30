@@ -20,7 +20,11 @@ ixseps2 = ny
 scale = 1
 function = 1 + 0.5*sin(y)
 
+[pardiv]
+type = fci
+
 [solver]
 output_step = 1
+cvode_precon_method = user
 
 nout = 10
