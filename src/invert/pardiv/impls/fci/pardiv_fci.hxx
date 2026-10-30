@@ -43,36 +43,56 @@ RegisterUnavailableInvertParDiv registerinvertpardivfci{
 
 #else
 
-#include <bout/dcomplex.hxx>
 #include <bout/globals.hxx>
-#include <bout/utils.hxx>
+#include <bout/petsc_operators.hxx>
+#include <bout/petsclib.hxx>
+
+#include <optional>
+#include <petscksp.h>
 
 class InvertParDivFci : public InvertParDiv {
 public:
   explicit InvertParDivFci(Options* opt, CELL_LOC location = CELL_CENTRE,
-                             Mesh* mesh_in = bout::globals::mesh);
+                           Mesh* mesh_in = bout::globals::mesh);
+  ~InvertParDivFci() override;
 
   using InvertParDiv::solve;
   Field3D solve(const Field3D& f) override;
 
   using InvertParDiv::setCoefA;
-  void setCoefA(const Field2D& f) override {
+  void setCoefA(const Field2D& f) override { setCoefA(Field3D(f)); }
+  void setCoefA(const Field3D& f) override {
     ASSERT1(localmesh == f.getMesh());
     ASSERT1(location == f.getLocation());
-    // TODO: Actual implementation
+    A = f;
+    dirty = true;
   }
 
   using InvertParDiv::setCoefB;
-  void setCoefB(const Field2D& f) override {
+  void setCoefB(const Field2D& f) override { setCoefB(Field3D(f)); }
+  void setCoefB(const Field3D& f) override {
     ASSERT1(localmesh == f.getMesh());
     ASSERT1(location == f.getLocation());
-    // TODO: Actual implementation
+    B = f;
+    dirty = true;
   }
 
 private:
-  Field2D A{1.0}, B{0.0};
+  void assemble();
 
-  int nsys;
+  /// Copy of f with parallel slices: interior/x-boundary from f,
+  /// virtual cells (yup/ydown) set to `virt`
+  Field3D withSlices(const Field3D& f, BoutReal virt) const;
+
+  PetscLib lib;                             ///< PETSc initialised for our lifetime
+  std::optional<PetscOperators> ops;        ///< Reads grid metadata
+  PetscOperators::Parallel par;             ///< Grad±, Div±, Interp±
+  std::optional<PetscCellOperator> neumann; ///< N
+  std::optional<PetscCellOperator> M;       ///< Assembled matrix
+
+  Field3D A, B;
+  bool dirty = true; ///< Coefficients changed since last assembly
+  KSP ksp{nullptr};
 };
 
 namespace {

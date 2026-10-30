@@ -847,6 +847,9 @@ public:
   /// @throws BoutException if any required field or scalar is missing from the mesh.
   explicit PetscOperators(Mesh* mesh);
 
+  /// @brief Cell-space index mapping, e.g. for makePetscCellVector.
+  const PetscCellMappingPtr& getCellMapping() const { return cell_mapping; }
+
   /// @brief Build the forward interpolation operator F: L+ ← C.
   ///
   /// Maps cell-space values to forward leg space using the CSR arrays stored in the
