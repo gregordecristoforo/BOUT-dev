@@ -22,5 +22,9 @@ function = 1 + 0.5*sin(y)
 
 [solver]
 output_step = 1
+cvode_precon_method = user  # Call the preconditioner (precon)
 
 nout = 10
+
+[pardiv]
+type = fci  # InvertParDiv backend used in the preconditioner
