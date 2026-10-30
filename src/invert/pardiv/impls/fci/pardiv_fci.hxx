@@ -34,11 +34,11 @@
 #include "bout/build_defines.hxx"
 #include "bout/invert_pardiv.hxx"
 
-#if not BOUT_USE_METRIC_3D
+#if not BOUT_USE_METRIC_3D or not BOUT_HAS_PETSC
 
 namespace {
 RegisterUnavailableInvertParDiv registerinvertpardivfci{
-    PARDIVCYCLIC, "BOUT++ was configured without 3D metrics"};
+    PARDIVFCI, "BOUT++ was configured without 3D metrics or PETSc"};
 }
 
 #else
@@ -59,13 +59,14 @@ public:
   void setCoefA(const Field2D& f) override {
     ASSERT1(localmesh == f.getMesh());
     ASSERT1(location == f.getLocation());
-    abort();
+    // TODO: Actual implementation
   }
+
   using InvertParDiv::setCoefB;
   void setCoefB(const Field2D& f) override {
     ASSERT1(localmesh == f.getMesh());
     ASSERT1(location == f.getLocation());
-    abort();
+    // TODO: Actual implementation
   }
 
 private:
@@ -78,6 +79,6 @@ namespace {
 RegisterInvertParDiv<InvertParDivFci> registerinvertpardivfci{PARDIVFCI};
 }
 
-#endif // !BOUT_USE_METRIC_3D
+#endif // not BOUT_USE_METRIC_3D or not BOUT_HAS_PETSC
 
 #endif // INV_PARDIV_FCI_H
