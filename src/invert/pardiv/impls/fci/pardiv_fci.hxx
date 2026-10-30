@@ -28,8 +28,8 @@
  *
  ************************************************************************/
 
-#ifndef INV_PARDIV_PETSC_H
-#define INV_PARDIV_PETSC_H
+#ifndef INV_PARDIV_FCI_H
+#define INV_PARDIV_FCI_H
 
 #include "bout/build_defines.hxx"
 #include "bout/invert_pardiv.hxx"
@@ -37,7 +37,7 @@
 #if not BOUT_USE_METRIC_3D
 
 namespace {
-RegisterUnavailableInvertParDiv registerinvertpardivpetsc{
+RegisterUnavailableInvertParDiv registerinvertpardivfci{
     PARDIVCYCLIC, "BOUT++ was configured without 3D metrics"};
 }
 
@@ -47,9 +47,9 @@ RegisterUnavailableInvertParDiv registerinvertpardivpetsc{
 #include <bout/globals.hxx>
 #include <bout/utils.hxx>
 
-class InvertParDivPetsc : public InvertParDiv {
+class InvertParDivFci : public InvertParDiv {
 public:
-  explicit InvertParDivPetsc(Options* opt, CELL_LOC location = CELL_CENTRE,
+  explicit InvertParDivFci(Options* opt, CELL_LOC location = CELL_CENTRE,
                              Mesh* mesh_in = bout::globals::mesh);
 
   using InvertParDiv::solve;
@@ -75,9 +75,9 @@ private:
 };
 
 namespace {
-RegisterInvertParDiv<InvertParDivPetsc> registerinvertpardivpetsc{PARDIVPETSC};
+RegisterInvertParDiv<InvertParDivFci> registerinvertpardivfci{PARDIVFCI};
 }
 
 #endif // !BOUT_USE_METRIC_3D
 
-#endif // INV_PARDIV_PETSC_H
+#endif // INV_PARDIV_FCI_H

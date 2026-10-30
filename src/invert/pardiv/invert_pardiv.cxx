@@ -28,7 +28,7 @@
  ************************************************************************/
 
 #include "impls/cyclic/pardiv_cyclic.hxx"
-#include "impls/petsc/pardiv_petsc.hxx"
+#include "impls/fci/pardiv_fci.hxx"
 #include <bout/invert_pardiv.hxx>
 
 Field2D InvertParDiv::solve(const Field2D& f) {

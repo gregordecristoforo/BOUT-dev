@@ -88,3 +88,6 @@ coverage/
 /CMakeCache.txt
 /CMakeFiles/cmake.check_cache
 .vscode/
+
+# Emacs
+TAGS

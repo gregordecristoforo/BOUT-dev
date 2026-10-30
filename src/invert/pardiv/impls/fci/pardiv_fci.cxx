@@ -30,7 +30,7 @@
  *
  ************************************************************************/
 
-#include "pardiv_petsc.hxx"
+#include "pardiv_fci.hxx"
 #include "bout/build_defines.hxx"
 
 #if BOUT_USE_METRIC_3D
@@ -46,12 +46,12 @@
 
 #include <cmath>
 
-InvertParDivPetsc::InvertParDivPetsc(Options* opt, CELL_LOC location, Mesh* mesh_in)
+InvertParDivFci::InvertParDivFci(Options* opt, CELL_LOC location, Mesh* mesh_in)
     : InvertParDiv(opt, location, mesh_in) {
     abort();
 }
 
-Field3D InvertParDivPetsc::solve(const Field3D& f) {
+Field3D InvertParDivFci::solve(const Field3D& f) {
     abort();
 }
 
