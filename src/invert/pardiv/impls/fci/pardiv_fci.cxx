@@ -1,12 +1,9 @@
 /************************************************************************
  *
- * FIXME
+ * FCI backend for InvertParDiv, see pardiv_fci.hxx.
  *
- * Known issues:
- * ------------
- *
- * FIXME
- *
+ * Derivation and notation: https://md.sigma2.no/tk9wifEUQXeUvgg177gIvQ?view
+ * cited below as [notes §N].
  *
  **************************************************************************
  * Copyright 2010 - 2022 BOUT++ contributors
@@ -48,7 +45,8 @@
 
 InvertParDivFci::InvertParDivFci(Options* opt, CELL_LOC location, Mesh* mesh_in)
     : InvertParDiv(opt, location, mesh_in), ops(localmesh),
-      // TODO: Neumann chosen, not validated against sheath BCs
+      // Grad±, Div±, Interp± with Neumann virtual cells built in [notes §3.4, §3.7]
+      // TODO: Neumann chosen, not validated against sheath BCs [notes §3.7]
       parallel(ops.getParallel()) {
     if (!localmesh->isFci()) {
         throw BoutException("Mesh is not FCI");
@@ -59,6 +57,7 @@ InvertParDivFci::InvertParDivFci(Options* opt, CELL_LOC location, Mesh* mesh_in)
 
 }
 
+// Coefficients need values on virtual cells for Interp±: Neumann copy [notes §4.2]
 Field3D InvertParDivFci::withParallelSlices(const Field3D& f) const {
   Field3D result = copy(f); // own data, so we don't modify the caller's field
   localmesh->communicate(result);
@@ -66,15 +65,22 @@ Field3D InvertParDivFci::withParallelSlices(const Field3D& f) const {
   return result;
 }
 
+// M_int = diag(A) + ½[Div− diag(Interp+ B) Grad+ + Div+ diag(Interp− B) Grad−]
+// [notes §3.5 step 8, §4.3]
 PetscCellOperator InvertParDivFci::assemble() const {
   // TODO: rebuilds the whole matrix every call; reuse structure, update values
+  //       [notes §4.8]
+  // TODO: boundary rows via masks, M = m_int·M_int + m_virt·(I − S) + m_xb
+  //       [notes §3.7.2, §4.5]
   const auto& p = parallel;
 
   // B on the forward / backward field-line segments, as diagonal matrices
+  // [notes §3.5 step 5]
   const auto B_plus = ops.diagonal(p.Interp_plus(B));
   const auto B_minus = ops.diagonal(p.Interp_minus(B));
 
   // Div_par(B Grad_par), averaged over the two sides (as in Div_par_K_Grad_par)
+  // [notes §3.5 steps 6-7]
   auto L = (p.Div_minus * B_plus * p.Grad_plus + p.Div_plus * B_minus * p.Grad_minus)
            * 0.5;
 
@@ -88,6 +94,7 @@ Field3D InvertParDivFci::solve(const Field3D& f) {
   BOUT_DO_PETSC(MatGetSize(M.raw(), &rows, &cols));
   output_info.write("InvertParDivFci: assembled {:d} x {:d} matrix\n", rows, cols);
 
+  // TODO: b = (m_int + m_xb)·f, KSPSolve, drop virtual cells [notes §4.6, §4.7]
   throw BoutException("fci backend: matrix assembled, solve not implemented");
 }
 

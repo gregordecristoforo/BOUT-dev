@@ -1,10 +1,16 @@
 /************************************************************************
- * FIXME
+ * FCI backend for InvertParDiv: solves (A + Div_par(B Grad_par)) x = b
+ * with PETSc, using the support-operator matrices from PetscOperators.
+ *
+ * Derivation and notation: https://md.sigma2.no/tk9wifEUQXeUvgg177gIvQ?view
+ * cited below as [notes §N].
  *
  * Known issues:
  * ------------
  *
- * FIXME
+ * - Solve not implemented yet [notes §4.6, §4.7]
+ * - Boundary rows not set explicitly yet [notes §3.7, §4.4, §4.5]
+ * - Only considered 1 rank
  *
  **************************************************************************
  * Copyright 2010 - 2022 BOUT++ contributors
@@ -48,7 +54,8 @@ RegisterUnavailableInvertParDiv registerinvertpardivfci{
 #include <bout/utils.hxx>
 #include <bout/petsc_operators.hxx>
 
-// TODO: KSP member + options from [pardiv]
+// TODO: KSP member + options from [pardiv] [notes §4.7]
+/// Solves M x = b with M = diag(A) + Div_par(B Grad_par) on an FCI grid [notes §4]
 class InvertParDivFci : public InvertParDiv {
 public:
   explicit InvertParDivFci(Options* opt, CELL_LOC location = CELL_CENTRE,
@@ -56,6 +63,7 @@ public:
   using InvertParDiv::solve;
   Field3D solve(const Field3D& f) override;
 
+  // A, B stored as Field3D (no z-average), with parallel slices [notes §4.1, §4.2]
   using InvertParDiv::setCoefA;
   void setCoefA(const Field2D& f) override { setCoefA(Field3D(f)); }
   void setCoefA(const Field3D& f) override {
@@ -76,13 +84,14 @@ private:
   Field3D A{1.0}, B{0.0};
 
   // TODO: >1 rank needs PetscOperators column-layout fix (54a68824a)
-  PetscOperators ops;  // reading FCI maps/weights from the grid
-  PetscOperators::Parallel parallel;
+  PetscOperators ops;  // reading FCI maps/weights from the grid: F, Bk, I±, w± [notes §3.2]
+  PetscOperators::Parallel parallel; // Grad±, Div±, Interp± [notes §3.3, §3.4]
 
   /// Copy of f with communicated guard cells and parallel (yup/ydown) slices
+  /// (Neumann copy into virtual cells) [notes §4.2]
   Field3D withParallelSlices(const Field3D& f) const;
 
-  /// Build A + Div_par(B Grad_par) as a PETSc matrix
+  /// Build A + Div_par(B Grad_par) as a PETSc matrix [notes §3.5, §4.3]
   PetscCellOperator assemble() const;
 
 };
